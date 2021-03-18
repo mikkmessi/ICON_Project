@@ -72,7 +72,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
 ss = StandardScaler()
 X_train_std = ss.fit_transform(X_train)
 X_test_std = ss.transform(X_test)
-'''
+
 
 # istanziamo la classe di calcolo della regressione lineare di SciKitLearn
 # la addestriamo e prediciamo i valori con il set di test
@@ -80,19 +80,33 @@ lRegr = linear_model.LinearRegression()
 lRegr.fit(X_train, Y_train)
 Y_pred = lRegr.predict(X_test)
 
+
 # calcoliamo l'errore quadratico medio e il coefficiente di determinazione
 errore = mean_squared_error(Y_test, Y_pred)
 print("Errore: ", errore)
 score = r2_score(Y_test, Y_pred)
 print("Score: ", score)
-print()
-
-print("Valore del bias: ", lRegr.intercept_)
+print()'''
 '''
+print("Valore del bias: ", lRegr.intercept_)
+
 # visualizziamo i valore dei pesi e del bias trovati
 for i in lRegr.coef_:
     print("Valore del peso i-esimo: ",i)
 '''
+
+stats_test = pd.read_excel("D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\Dataset_g27.xlsx", sheet_name="TuttoInsiemeOrdinato")
+
+myTeam = stats_test.loc[(stats_test['ID'] == 373) | (stats_test['ID'] == 464) | (stats_test['ID'] == 402) | (stats_test['ID'] == 374)]
+
+modeling_test = myTeam.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
+
+prediction = lRegr.predict(modeling_test)
+
+
+print(prediction)
+
+
 
 
 
