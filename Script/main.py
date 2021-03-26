@@ -3,7 +3,7 @@ Created on 10 mar 2021
 
 @author: kecco
 '''
-import Performance as p
+import performance as p
 
 # file_path_1 = "https://github.com/mikkmessi/ICON_Project/blob/main/Dataset/Dataset_g26_NOPOR.xlsx"
 

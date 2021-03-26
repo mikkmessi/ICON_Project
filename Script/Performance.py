@@ -13,110 +13,144 @@ from sklearn.ensemble import RandomForestRegressor
 
 ss = StandardScaler()
 
-n_players = 3
+N_PLAYERS = 3                                           # COSTANTE
+
+# Creazione dizionario classificatori, che contiene come chiavi il nome dei class., come valori un istanza di essi
+
+dict_regressors = {
+    "Linear Regression": LinearRegression(),
+    "Naive Bayes": ARDRegression(),
+    "Random Forest": RandomForestRegressor(),
+}
 
 
 def load_and_model(file_path):
-    
-    # "C:\\Users\\kecco\\Documents\\GitHub\\ICON_Project\\Dataset\\Dataset_g26_NOPOR.xlsx"
+    '''
+        The function loads an excel file from path in a pandas dataframe then
+        does a one-hot encode of a categorical variable.
+    :param      file_path: string
+    :return:    stats: pandas dataframe
+    '''
+
     stats = pd.read_excel(file_path)
-    modeling = stats.copy()
-    modeling = pd.concat([modeling,pd.get_dummies(modeling['Ruolo'],prefix='Ruolo')],axis=1)
-    modeling = modeling.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
+    stats = pd.concat([stats, pd.get_dummies(stats['Ruolo'], prefix='Ruolo')], axis=1)
     
-    return modeling
+    return stats
 
 
-def split(modeling):
-    
-    X = modeling[["Partite_giocate", "PG_Titolare",    "Min_giocati", "Min_90", "Reti", "Assist", "Reti_no_rig", "Reti_rig",
-              "Rig_tot", "Amm", "Esp", "Reti_90", "Assist_90", "Compl", "Tent", "%Tot", "Dist",    "Dist_prog",
-              "Pass_Assist", "Pass_tiro", "Pass_terzo", "Pass_area", "Cross_area", "Pass_prog", "Tocchi", "Drib_vinti",
-              "Drib_tot", "%Drib_vinti", "Giocatori_sup", "Tunnel", "Controlli_palla", "Dist_controllo",
-              "Dist_controllo_vs_rete", "Prog_controllo_area_avv", "Controllo_area", "Controllo_perso",
-              "Contrasto_perso", "Dest", "Ricevuti", "Ricevuti_prog", "Tiri_Reti", "Tiri", "Tiri_specchio",
-              "%Tiri_specchio", "Tiri_specchio_90", "Goal_tiro", "Dist_avg_tiri", "Tiri_puniz", "Contr", "Contr_vinti",
-              "Dribb_blocked", "Dribb_no_block", "Dribb_sub", "%Dribb_blocked", "Press", "Press_vinti", "%Press_vinti",
-              "Blocchi", "Tiri_block", "Tiri_porta_block", "Pass_block", "Intercett", "Tkl_Int", "Salvat", "Err_to_tiro",
-              "Azioni_tiro", "Pass_tiro_gioco", "Pass_tiro_no_gioco", "Dribbling_tiro", "Tiri_tiro", "Falli_sub_tiro",
-              "Azioni_dif_tiro", "Azioni_gol", "Pass_gol_gioco", "Pass_gol_no_gioco", "Dribbling_gol", "Tiri_gol",
-              "Falli_gol", "Azioni_dif_gol", "Azioni_Autogol","Ruolo_Att","Ruolo_Dif","Ruolo_Cen","Ruolo_CenAtt",
-              "Ruolo_AttCen","Ruolo_DifAtt","Ruolo_DifCen","Ruolo_CenDif","Ruolo_AttDif"]].values
+def split(stats):
+    '''
+        Once removed all the string parameters from the dataframe, splits "stats" in train and test sets and scales
+        the feature sets.
+
+    :param      stats: pandas dataframe
+    :return:    X_train_std, X_test_std, Y_train, Y_test: list
+    '''
+
+    stats = stats.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
+
+    X = stats[["Partite_giocate", "PG_Titolare",    "Min_giocati", "Min_90", "Reti", "Assist", "Reti_no_rig", "Reti_rig",
+                "Rig_tot", "Amm", "Esp", "Reti_90", "Assist_90", "Compl", "Tent", "%Tot", "Dist",    "Dist_prog",
+                "Pass_Assist", "Pass_tiro", "Pass_terzo", "Pass_area", "Cross_area", "Pass_prog", "Tocchi", "Drib_vinti",
+                "Drib_tot", "%Drib_vinti", "Giocatori_sup", "Tunnel", "Controlli_palla", "Dist_controllo",
+                "Dist_controllo_vs_rete", "Prog_controllo_area_avv", "Controllo_area", "Controllo_perso",
+                "Contrasto_perso", "Dest", "Ricevuti", "Ricevuti_prog", "Tiri_Reti", "Tiri", "Tiri_specchio",
+                "%Tiri_specchio", "Tiri_specchio_90", "Goal_tiro", "Dist_avg_tiri", "Tiri_puniz", "Contr", "Contr_vinti",
+                "Dribb_blocked", "Dribb_no_block", "Dribb_sub", "%Dribb_blocked", "Press", "Press_vinti", "%Press_vinti",
+                "Blocchi", "Tiri_block", "Tiri_porta_block", "Pass_block", "Intercett", "Tkl_Int", "Salvat", "Err_to_tiro",
+                "Azioni_tiro", "Pass_tiro_gioco", "Pass_tiro_no_gioco", "Dribbling_tiro", "Tiri_tiro", "Falli_sub_tiro",
+                "Azioni_dif_tiro", "Azioni_gol", "Pass_gol_gioco", "Pass_gol_no_gioco", "Dribbling_gol", "Tiri_gol",
+                "Falli_gol", "Azioni_dif_gol", "Azioni_Autogol", "Ruolo_Att", "Ruolo_Dif", "Ruolo_Cen", "Ruolo_CenAtt",
+                "Ruolo_AttCen", "Ruolo_DifAtt", "Ruolo_DifCen", "Ruolo_CenDif", "Ruolo_AttDif"]].values
         
-    Y = modeling["Mf"].values
+    Y = stats["Mf"].values
         
     # suddividiamo il dataseet in due dataset, uno di training ed uno di test
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3)
     
     # standardizzo il train set creando un modello di standardizzazione
     X_train_std = ss.fit_transform(X_train)
     X_test_std = ss.transform(X_test)
     
-    return X_train_std,X_test_std,Y_train,Y_test
-    
-# Creazione dizionario classificatori, che contiene come chiavi il nome dei class., come valori un istanza di essi
+    return X_train_std, X_test_std, Y_train, Y_test
 
 
-dict_classifiers = {
-    
-    "Linear Regression": LinearRegression(),
-    "Naive Bayes": ARDRegression(),    
-    "Random Forest": RandomForestRegressor(),
-    
-    }    
+def batch_classify(X_train, Y_train, X_test, Y_test, no_regressors=3):
+    '''
+        Given training and test sets, trains each regressor in dict_regressors, compute their train and test score,
+        prints them for each regressor and returns the best regressor based on the mean between
+        train and test score.
 
+    :param      X_train: list
+    :param      Y_train: list
+    :param      X_test: list
+    :param      Y_test: list
+    :param      no_regressors: integer
 
-def batch_classify(X_train, Y_train, X_test, Y_test, no_classifiers= 3):
-    
+    :return:    best_model: regressor
+    '''
     dict_models = {}
     massimo = 0
     
-    for classifier_name, classifier in list(dict_classifiers.items())[:no_classifiers]:
+    for classifier_name, regressor in list(dict_regressors.items())[:no_regressors]:
         
-        classifier.fit(X_train,Y_train)
-        train_score = classifier.score(X_train,Y_train)
-        test_score = classifier.score(X_test,Y_test)
+        regressor.fit(X_train, Y_train)
+        train_score = regressor.score(X_train, Y_train)
+        test_score = regressor.score(X_test, Y_test)
         mean = (train_score + test_score) / 2
         
-        if mean > massimo :
+        if mean > massimo:
             
             massimo = mean
-            best_model = classifier
+            best_model = regressor
         
-        dict_models[classifier_name] = {'model': classifier, 'train_score': train_score, 'test_score': test_score, 'media': mean}
+        dict_models[classifier_name] = {'model': regressor, 'train_score': train_score, 'test_score': test_score, 'media': mean}
     
     print(dict_models)
             
-    return dict_models, best_model
+    return best_model
             
     
 def team(file_path):
+    '''
+        Reads from input players' IDs, extract them from the complete dataframe, saves in "my_team_full" the complete
+        set of information, including the string values, then drop them and scale their numeric values.
+
+    :param      file_path: string
+    :return:    my_team_std: transformed array, with no string parameters
+    :return:    my_team_full: pandas dataframe
+    '''
               
-    ids = np.empty([n_players])
+    ids = np.empty([N_PLAYERS])
              
-    for i in range(n_players):
+    for i in range(N_PLAYERS):
         ids[i] = input("Inserisci ID giocatore: ")
 
-    stats_test = pd.read_excel(file_path)
-    modeling_test = stats_test.copy()
-    modeling_test = pd.concat([modeling_test,pd.get_dummies(modeling_test['Ruolo'],prefix='Ruolo')],axis=1)
+    stats = load_and_model(file_path)
 
     my_team = pd.DataFrame()
     
-    for i in range(n_players):
-        my_team = my_team.append(modeling_test.loc[modeling_test['ID'] == ids[i]])
+    for i in range(N_PLAYERS):
+        my_team = my_team.append(stats.loc[stats['ID'] == ids[i]])
 
-    my_team_c = my_team.copy()
+    my_team_full = my_team.copy()
     my_team = my_team.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
     
     my_team_std = ss.transform(my_team)
         
-    return my_team_std, my_team_c
+    return my_team_std, my_team_full
 
 
 def final_weight(player_id, match_day):
+    '''
+        Given a player, it gets information on the next match of his team from the excel file and returns
+        their sum, scaled by 100.
+    :param      player_id:   string
+    :param      match_day:   integer
+    :return:
+    '''
 
-    BEST_SCORER = 0.2                       # COSTANTE
+    BEST_SCORER = 0.1                                       # CONSTANT
 
     # reading excel files
     file_path = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
@@ -140,31 +174,31 @@ def final_weight(player_id, match_day):
             vs_team = each_team
 
     # player and opponent team in rank (whole row)
-    p_team = classifica.loc[player_team]                    # Juventus - pos. 3
-    vs_team = classifica.loc[vs_team]                       # Cagliari - pos. 17
+    p_team = classifica.loc[player_team]
+    vs_team = classifica.loc[vs_team]
 
     # deviation between each team position
-    dev_pos = vs_team["Pos"] - p_team["Pos"]                # FIRST METRIC. Right value for id = 462 is 14
+    dev_pos = vs_team["Pos"] - p_team["Pos"]                # FIRST METRIC
 
     # deviation between goals scored and conceded
-    vs_dev_goals = vs_team["Diff_reti"] * (-1)              # SECOND METRIC. Right value for id = 462 is 14
+    vs_dev_goals = vs_team["Diff_reti"] * (-1)              # SECOND METRIC
 
-    p_dev_goals = p_team["Diff_reti"]                       # THIRD METRIC. Right value for id = 462 is 30
+    p_dev_goals = p_team["Diff_reti"]                       # THIRD METRIC
 
     # bonus applied in case the player is the best scorer of his team
     bonus_best_scorer = 0                                   # By default 0, if player is not the best scorer of the team
     name_player = player["Nome_Cognome"].split("\\")
 
     if name_player[0] in p_team["Miglior_marcatore"]:
-        bonus_best_scorer = BEST_SCORER                     # FOURTH METRIC. Right value for id = 462 is 0.2
+        bonus_best_scorer = BEST_SCORER                     # FOURTH METRIC
 
     last_five = p_team["Ultime_5"]                          # last five results for the player team
-    lf_ratio_p_team = last_five.count("V") / 5              # FIFTH METRIC. Right value for id = 462 is 3/5 = 0.6
+    lf_ratio_p_team = last_five.count("V") / 5              # FIFTH METRIC
 
     last_five = vs_team["Ultime_5"]                         # last five results for the opponent team
-    lf_ratio_vs_team = (-1) * (last_five.count("V") / 5)    # SIXTH METRIC. Right value for id = 462 is -(2/5) = -0.4
+    lf_ratio_vs_team = (-1) * (last_five.count("V") / 5)    # SIXTH METRIC
 
-    # final weight for the single player. Right value for id = 462 is 0.584
+    # final weight for the single player
     f_weight = round((dev_pos + vs_dev_goals + p_dev_goals + bonus_best_scorer + lf_ratio_p_team + lf_ratio_vs_team)/100, 3)
 
     return f_weight
