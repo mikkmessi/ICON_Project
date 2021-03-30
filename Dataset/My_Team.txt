@@ -1,0 +1,25 @@
+Audero,Sampdoria
+Consigli,Sassuolo
+Cragno,Cagliari
+Bruno Peres,Roma
+Darmian,Inter
+Dijks,Bologna
+Karsdorp,Roma
+Letizia,Benevento
+Pezzella,Fiorentina
+Spinazzola,Roma
+Young,Inter
+Arthur,Juventus
+Barak,Hellas Verona
+Bentancur,Juventus
+Candreva,Sampdoria
+Jankto,Sampdoria
+Perisic,Inter
+Pessina,Atalanta
+Zielinski,Napoli
+Joao Pedro,Cagliari
+Nzola,Spezia
+Quagliarella,Sampdoria
+Ribery,Fiorentina
+Ronaldo,Juventus
+Simy,Crotone
