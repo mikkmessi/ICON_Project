@@ -212,7 +212,7 @@ def final_weight(player_id, match_day):
 
 def principal_component_analysis(X_train_std,X_test_std):
     '''
-    Given training and test sets, reduce the number of features based on variance ratio
+        Given training and test sets, reduce the number of features based on variance ratio
     
     :param      X_train: list
     :param      X_test: list    
@@ -241,10 +241,9 @@ def principal_component_analysis(X_train_std,X_test_std):
     return X_train_pca, X_test_pca     
 
 
-
-def hypertuning(best_model,X_train_std,Y_train):
+def hypertuning(best_model, X_train_std, Y_train):
     '''
-    Perform RandomizedSearchCV and GridSearchCV in order to find the best combination of parameters for the regressor
+        Perform RandomizedSearchCV and GridSearchCV in order to find the best combination of parameters for the regressor
     
     :param     best_model: regressor
     :param      X_train: list
@@ -303,12 +302,12 @@ def hypertuning(best_model,X_train_std,Y_train):
     min_samples_split = [2,7,12,23,34]
     min_samples_leaf = [2,7,12,18,23,28]
     bootstrap = [False]
-    param_grid = {'n_estimators': n_estimators,
-               'max_features': max_features,
-               'max_depth': max_depth,
-               'min_samples_split': min_samples_split,
-               'min_samples_leaf': min_samples_leaf,
-               'bootstrap': bootstrap}
+    param_grid ={'n_estimators': n_estimators,
+                'max_features': max_features,
+                'max_depth': max_depth,
+                'min_samples_split': min_samples_split,
+                'min_samples_leaf': min_samples_leaf,
+                'bootstrap': bootstrap}
     gs = GridSearchCV(best_model, param_grid, cv = 3, verbose = 1, n_jobs=-1)
     gs.fit(X_train_std, Y_train)
     rfc = gs.best_estimator_
@@ -318,9 +317,10 @@ def hypertuning(best_model,X_train_std,Y_train):
     
     return 0
 
+
 def importance(best_model,dataset):
     '''
-    Shows dataset's features importance given a model of regression
+        Shows dataset's features importance given a model of regression
     
     :param     best_model: regressor
     :param     dataset: pandas dataframe
@@ -337,3 +337,46 @@ def importance(best_model,dataset):
     [print('Variable: {:20} Importance: {}'.format(*pair)) for pair in feature_importances];
     
     return 0
+
+
+def final_score(my_team_full, prediction, football_day):
+    '''
+        Sums up each player "Media Fantavoto" prediction with each player "final_weight".
+                
+    :param      my_team_full: pandas dataframe          user's full team dataframe, including string characteristics
+    :param      prediction: list                        list of predictions of "Media Fantavoto" for team players
+    :param      football_day: integer                   the football day when the match is played
+
+    :return:    pandas dataframe                        final score for all players in user's team
+    '''
+
+    # dictionary to transform into a pandas dataframe
+    dict_final_score = {
+        'ID': [],
+        'Nome_Cognome': [],
+        'Prediction': [],
+        'Final_weight': [],
+        'Final_score': []
+    }
+
+    i = 0
+
+    for player in list(my_team_full['ID']):
+        row_player = my_team_full.loc[my_team_full["ID"] == player]
+
+        player_id = int(row_player["ID"].values)
+        player_name = row_player["Nome_Cognome"].values[0]
+        player_name = player_name.split('\\')
+        weight = final_weight(player, football_day)
+
+        dict_final_score['ID'].append(player_id)
+        dict_final_score['Nome_Cognome'].append(player_name[0])
+        dict_final_score['Prediction'].append(prediction[i])
+        dict_final_score['Final_weight'].append(weight)
+        dict_final_score['Final_score'].append(prediction[i] + weight)
+
+        i += 1
+
+    df_final_score = pd.DataFrame(dict_final_score)
+
+    return df_final_score
