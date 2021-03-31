@@ -151,8 +151,9 @@ def final_weight(player_id, match_day, string_dataset):
     '''
         Given a player, it gets information on the next match of his team from the excel file and returns
         their sum, scaled by 100.
-    :param      player_id:   string
-    :param      match_day:   integer
+    :param      player_id:      string
+    :param      match_day:      integer
+    :param      string_dataset: string
     :return:
     '''
 

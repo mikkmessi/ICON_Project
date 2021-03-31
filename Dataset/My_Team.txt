@@ -1,25 +1,25 @@
-Audero,Sampdoria
-Consigli,Sassuolo
-Cragno,Cagliari
-Bruno Peres,Roma
-Darmian,Inter
-Dijks,Bologna
-Karsdorp,Roma
-Letizia,Benevento
-Pezzella,Fiorentina
-Spinazzola,Roma
-Young,Inter
-Arthur,Juventus
-Barak,Hellas Verona
-Bentancur,Juventus
-Candreva,Sampdoria
-Jankto,Sampdoria
-Perisic,Inter
-Pessina,Atalanta
-Zielinski,Napoli
-Joao Pedro,Cagliari
-Nzola,Spezia
-Quagliarella,Sampdoria
-Ribery,Fiorentina
-Ronaldo,Juventus
-Simy,Crotone
+Emil-Audero,Sampdoria
+Andrea-Consigli,Sassuolo
+Alessio-Cragno,Cagliari
+Bruno-Peres,Roma
+Matteo-Darmian,Inter
+Mitchell-Dijks,Bologna
+Rick-Karsdorp,Roma
+Gaetano-Letizia,Benevento
+German-Pezzella,Fiorentina
+Leonardo-Spinazzola,Roma
+Ashley-Young,Inter
+Arthur-Melo,Juventus
+Antonin-Barak,Hellas Verona
+Rodrigo-Bentancur,Juventus
+Antonio-Candreva,Sampdoria
+Jakub-Jankto,Sampdoria
+Ivan-Perisic,Inter
+Matteo-Pessina,Atalanta
+Piotr-Zielinski,Napoli
+Joao-Pedro,Cagliari
+MBala-Nzola,Spezia
+Fabio-Quagliarella,Sampdoria
+Franck-Ribery,Fiorentina
+Cristiano-Ronaldo,Juventus
+Simeon-Nwankwo,Crotone
