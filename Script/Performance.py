@@ -147,7 +147,7 @@ def team(file_path):
     return my_team_std, my_team_full
 
 
-def final_weight(player_id, match_day):
+def final_weight(player_id, match_day, string_dataset):
     '''
         Given a player, it gets information on the next match of his team from the excel file and returns
         their sum, scaled by 100.
@@ -160,7 +160,7 @@ def final_weight(player_id, match_day):
 
     # reading excel files
     file_path = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
-    all_players = pd.read_excel(file_path + "Dataset_g26_NOPOR.xlsx", index_col="ID")
+    all_players = pd.read_excel(file_path + string_dataset, index_col="ID")
     calendario = pd.read_excel(file_path + "Calendario_2021.xlsx")
     classifica = pd.read_excel(file_path + "Statistiche_g26_v2.0.xlsx", sheet_name="Classifica", index_col="Squadra")
 
