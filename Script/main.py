@@ -30,5 +30,8 @@ print()
 
 df_final_score_gk = p.best_goalkeeper()
 
-best_team = p.best_eleven(df_final_score, df_final_score_gk)
+best_team, best_module = p.best_eleven(df_final_score, df_final_score_gk)
+
+print("Il modulo migliore per la prossima partita sembrerebbe essere il modulo ", best_module, "con la formazione: ")
+print()
 print(best_team)

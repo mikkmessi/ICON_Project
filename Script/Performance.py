@@ -21,7 +21,13 @@ pca = PCA(n_components=0.5)
 
 N_PLAYERS = 3                                                   # COSTANTE
 FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
-module = '3-4-3'
+modules_list = ['3-4-3',
+                '3-5-2',
+                '4-5-1',
+                '4-4-2',
+                '4-3-3',
+                '5-3-2',
+                '5-4-1']
 
 # Creazione dizionario classificatori, che contiene come chiavi il nome dei class., come valori un istanza di essi
 dict_regressors = {
@@ -450,7 +456,7 @@ def best_eleven(df_final_score, df_final_score_gk):
     print()
 
     # separare i giocatori per ruolo, ordinarli dopo la separazione
-    df_fs_dif = df_final_score.loc[df_final_score["Ruolo"] == "Dif"]
+    df_fs_dif = df_final_score.loc[df_final_score["Ruolo"] == "Dif"]            # dataframe_finalscore_difensori
     df_fs_dif = df_fs_dif.sort_values(by=['Final_score'], ascending=False)
     print(df_fs_dif)
     print()
@@ -465,17 +471,32 @@ def best_eleven(df_final_score, df_final_score_gk):
     print(df_fs_att)
     print()
 
-    # taking the best players for the module
-    module_str = module.split("-")
+    goalkeeper = df_final_score_gk.iloc[0]
 
-    nbr_dif, nbr_cen, nbr_att = int(module_str[0]), int(module_str[1]), int(module_str[2])
+    best_team_score = 0
 
-    df_best_eleven = pd.DataFrame(columns=list(df_fs_att))
+    for module in modules_list:
+        # taking the best players for the module
+        module_str = module.split("-")
 
-    df_best_eleven = df_best_eleven.append(df_final_score_gk.iloc[0])
-    df_best_eleven = df_best_eleven.append(df_fs_dif[:nbr_dif])
-    df_best_eleven = df_best_eleven.append(df_fs_cen[:nbr_cen])
-    df_best_eleven = df_best_eleven.append(df_fs_att[:nbr_att])
+        nbr_dif, nbr_cen, nbr_att = int(module_str[0]), int(module_str[1]), int(module_str[2])
 
-    return df_best_eleven
+        df_best_eleven = pd.DataFrame(columns=list(df_fs_att))
+
+        df_best_eleven = df_best_eleven.append(goalkeeper)
+        df_best_eleven = df_best_eleven.append(df_fs_dif[:nbr_dif])
+        df_best_eleven = df_best_eleven.append(df_fs_cen[:nbr_cen])
+        df_best_eleven = df_best_eleven.append(df_fs_att[:nbr_att])
+
+        team_score = 0
+
+        for player_score in df_best_eleven['Final_score']:
+            team_score += player_score
+
+        if team_score > best_team_score:
+            df_best_team = df_best_eleven.copy()
+            best_module = module
+            best_team_score = team_score
+
+    return df_best_team, best_module
 
