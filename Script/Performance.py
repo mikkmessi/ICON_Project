@@ -19,10 +19,10 @@ from sklearn.model_selection import GridSearchCV
 ss = StandardScaler()
 pca = PCA(n_components=0.5)
 
-N_PLAYERS = 3                                           # COSTANTE
+N_PLAYERS = 3                                                   # COSTANTE
+FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
 
 # Creazione dizionario classificatori, che contiene come chiavi il nome dei class., come valori un istanza di essi
-
 dict_regressors = {
     "Linear Regression": LinearRegression(),
     "Naive Bayes": ARDRegression(),
@@ -30,21 +30,22 @@ dict_regressors = {
 }
 
 
-def load_and_model(file_path):
+def load_and_model(sheet_name):
     '''
         The function loads an excel file from path in a pandas dataframe then
         does a one-hot encode of a categorical variable.
-    :param      file_path: string
-    :return:    stats: pandas dataframe
+    :param      file_path:      string
+    :param      sheet_name:     string
+    :return:    stats:          pandas dataframe
     '''
 
-    stats = pd.read_excel(file_path)
+    stats = pd.read_excel(FILE_PATH + "Dataset_NOPOR.xlsx", sheet_name=sheet_name)
     stats = pd.concat([stats, pd.get_dummies(stats['Ruolo'], prefix='Ruolo')], axis=1)
     
     return stats
 
 
-def split(stats):
+def split_and_std(stats):
     '''
         Once removed all the string parameters from the dataframe, splits "stats" in train and test sets and scales
         the feature sets.
@@ -60,14 +61,13 @@ def split(stats):
                 "Pass_Assist", "Pass_tiro", "Pass_terzo", "Pass_area", "Cross_area", "Pass_prog", "Tocchi", "Drib_vinti",
                 "Drib_tot", "%Drib_vinti", "Giocatori_sup", "Tunnel", "Controlli_palla", "Dist_controllo",
                 "Dist_controllo_vs_rete", "Prog_controllo_area_avv", "Controllo_area", "Controllo_perso",
-                "Contrasto_perso", "Dest", "Ricevuti", "Ricevuti_prog", "Tiri_Reti", "Tiri", "Tiri_specchio",
+                "Contrasto_perso", "Dest", "Ricevuti", "Ricevuti_prog", "Tiri_reti", "Tiri", "Tiri_specchio",
                 "%Tiri_specchio", "Tiri_specchio_90", "Goal_tiro", "Dist_avg_tiri", "Tiri_puniz", "Contr", "Contr_vinti",
-                "Dribb_blocked", "Dribb_no_block", "Dribb_sub", "%Dribb_blocked", "Press", "Press_vinti", "%Press_vinti",
+                "Dribbl_blocked", "Dribbl_no_block", "Dribbl_sub", "%Dribbl_blocked", "Press", "Press_vinti", "%Press_vinti",
                 "Blocchi", "Tiri_block", "Tiri_porta_block", "Pass_block", "Intercett", "Tkl_Int", "Salvat", "Err_to_tiro",
                 "Azioni_tiro", "Pass_tiro_gioco", "Pass_tiro_no_gioco", "Dribbling_tiro", "Tiri_tiro", "Falli_sub_tiro",
                 "Azioni_dif_tiro", "Azioni_gol", "Pass_gol_gioco", "Pass_gol_no_gioco", "Dribbling_gol", "Tiri_gol",
-                "Falli_gol", "Azioni_dif_gol", "Azioni_Autogol", "Ruolo_Att", "Ruolo_Dif", "Ruolo_Cen", "Ruolo_CenAtt",
-                "Ruolo_AttCen", "Ruolo_DifAtt", "Ruolo_DifCen", "Ruolo_CenDif", "Ruolo_AttDif"]].values
+                "Falli_gol", "Azioni_dif_gol", "Azioni_Autogol", "Ruolo_Att", "Ruolo_Dif", "Ruolo_Cen"]].values
         
     Y = stats["Mf"].values
         
@@ -117,59 +117,65 @@ def batch_classify(X_train, Y_train, X_test, Y_test, no_regressors=3):
     return best_model
             
     
-def team(file_path):
+def team(sheet_name):
     '''
-        Reads from input players' IDs, extract them from the complete dataframe, saves in "my_team_full" the complete
-        set of information, including the string values, then drop them and scale their numeric values.
+        Reads from a txt file the players' names, extract them from the complete dataframe, saves in "df_my_team_full" the complete
+        set of information, including the string values, then drop them and scale their numeric values, in df_my_team_std.
 
-    :param      file_path: string
-    :return:    my_team_std: transformed array, with no string parameters
-    :return:    my_team_full: pandas dataframe
+    :param      file_path:         string
+    :param      sheet_name:        string
+    :return:    df_my_team_std:    transformed array, with no string parameters
+    :return:    df_my_team_full:   pandas dataframe
     '''
-              
-    ids = np.empty([N_PLAYERS])
-             
-    for i in range(N_PLAYERS):
-        ids[i] = input("Inserisci ID giocatore: ")
 
-    stats = load_and_model(file_path)
+    df_my_team_names = pd.read_csv(FILE_PATH + "My_team_NOPOR.txt", sep=',', header=None, names=["Nome_Cognome", "Squadra"])
 
-    my_team = pd.DataFrame()
+    all_players = pd.read_excel(FILE_PATH + "Dataset_NOPOR.xlsx", sheet_name=sheet_name)
+
+    # pd.set_option("display.max_columns", None)
+    df_my_team = pd.DataFrame()
+
+    for player in list(df_my_team_names["Nome_Cognome"]):
+        players = list(all_players["Nome_Cognome"])
+        for each_player in players:
+            player_name = each_player.split("\\")
+            if player == player_name[1]:
+                df_my_team = df_my_team.append(all_players.loc[all_players["Nome_Cognome"] == each_player])
+
+    df_my_team_full = df_my_team.copy()
+
+    df_my_team = pd.concat([df_my_team, pd.get_dummies(df_my_team['Ruolo'], prefix='Ruolo')], axis=1)
+    df_my_team = df_my_team.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
     
-    for i in range(N_PLAYERS):
-        my_team = my_team.append(stats.loc[stats['ID'] == ids[i]])
-
-    my_team_full = my_team.copy()
-    my_team = my_team.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
-    
-    my_team_std = ss.transform(my_team)
+    df_my_team_std = ss.transform(df_my_team)
         
-    return my_team_std, my_team_full
+    return df_my_team_std, df_my_team_full
 
 
-def final_weight(player_id, match_day, string_dataset):
+def final_weight(sheet_name, player_id, football_day):
     '''
         Given a player, it gets information on the next match of his team from the excel file and returns
         their sum, scaled by 100.
+
+    :param      sheet_name:     string
     :param      player_id:      string
-    :param      match_day:      integer
-    :param      string_dataset: string
-    :return:
+    :param      football_day:   integer
+
+    :return:    f_weight:       float
     '''
 
     BEST_SCORER = 0.1                                       # CONSTANT
 
     # reading excel files
-    file_path = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
-    all_players = pd.read_excel(file_path + string_dataset, index_col="ID")
-    calendario = pd.read_excel(file_path + "Calendario_2021.xlsx")
-    classifica = pd.read_excel(file_path + "Statistiche_g26_v2.0.xlsx", sheet_name="Classifica", index_col="Squadra")
+    all_players = pd.read_excel(FILE_PATH + "Dataset_NOPOR.xlsx", sheet_name=sheet_name, index_col="ID")
+    calendario = pd.read_excel(FILE_PATH + "Calendario_2021.xlsx")
+    classifica = pd.read_excel(FILE_PATH + "Classifica.xlsx", sheet_name=sheet_name, index_col="Squadra")
 
     player = all_players.loc[player_id]
     player_team = player["Squadra"]
 
     # retrieving matches for the day
-    matches = list(calendario[match_day])
+    matches = list(calendario[football_day])
 
     # retrieving opponent team for the player specified
     for match in matches:
@@ -211,12 +217,12 @@ def final_weight(player_id, match_day, string_dataset):
     return f_weight
 
 
-def principal_component_analysis(X_train_std,X_test_std):
+def principal_component_analysis(X_train_std, X_test_std):
     '''
         Given training and test sets, reduce the number of features based on variance ratio
     
-    :param      X_train: list
-    :param      X_test: list    
+    :param      X_train_std:    list
+    :param      X_test_std:     list
     '''
     pca_test = PCA(n_components=89)
     pca_test.fit(X_train_std)
@@ -319,7 +325,7 @@ def hypertuning(best_model, X_train_std, Y_train):
     return 0
 
 
-def importance(best_model,dataset):
+def importance(best_model, dataset):
     '''
         Shows dataset's features importance given a model of regression
     
@@ -340,7 +346,7 @@ def importance(best_model,dataset):
     return 0
 
 
-def final_score(my_team_full, prediction, football_day):
+def final_score(my_team_full, prediction, football_day, sheet_name):
     '''
         Sums up each player "Media Fantavoto" prediction with each player "final_weight".
                 
@@ -368,7 +374,7 @@ def final_score(my_team_full, prediction, football_day):
         player_id = int(row_player["ID"].values)
         player_name = row_player["Nome_Cognome"].values[0]
         player_name = player_name.split('\\')
-        weight = final_weight(player, football_day)
+        weight = final_weight(sheet_name, player, football_day)
 
         dict_final_score['ID'].append(player_id)
         dict_final_score['Nome_Cognome'].append(player_name[0])
