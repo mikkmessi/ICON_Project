@@ -21,6 +21,7 @@ pca = PCA(n_components=0.5)
 
 N_PLAYERS = 3                                                   # COSTANTE
 FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
+module = '3-4-3'
 
 # Creazione dizionario classificatori, che contiene come chiavi il nome dei class., come valori un istanza di essi
 dict_regressors = {
@@ -361,6 +362,7 @@ def final_score(my_team_full, prediction, football_day, sheet_name):
     dict_final_score = {
         'ID': [],
         'Nome_Cognome': [],
+        'Ruolo': [],
         'Prediction': [],
         'Final_weight': [],
         'Final_score': []
@@ -374,10 +376,12 @@ def final_score(my_team_full, prediction, football_day, sheet_name):
         player_id = int(row_player["ID"].values)
         player_name = row_player["Nome_Cognome"].values[0]
         player_name = player_name.split('\\')
+        player_role = row_player["Ruolo"].values[0]
         weight = final_weight(sheet_name, player, football_day)
 
         dict_final_score['ID'].append(player_id)
         dict_final_score['Nome_Cognome'].append(player_name[0])
+        dict_final_score['Ruolo'].append(player_role)
         dict_final_score['Prediction'].append(prediction[i])
         dict_final_score['Final_weight'].append(weight)
         dict_final_score['Final_score'].append(prediction[i] + weight)
@@ -387,3 +391,91 @@ def final_score(my_team_full, prediction, football_day, sheet_name):
     df_final_score = pd.DataFrame(dict_final_score)
 
     return df_final_score
+
+
+def best_goalkeeper(dataset_name="Portieri.xlsx", sheet_name="g27"):
+
+    ss = StandardScaler()
+
+    # Training and testing
+    dataset_por = pd.read_excel(FILE_PATH + dataset_name, sheet_name="g26")
+
+    dataset_por = dataset_por.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
+
+    X = dataset_por[["Partite_giocate", "PG_titolare", "Min_giocati", "Min_90", "Reti_sub",
+                     "Reti_sub_90", "Tiri_sub", "Parate", "Porta_inviolata", "Rig_tot", "Rig_concessi",
+                     "Rig_salvati", "Rig_mancati"]].values
+
+    Y = dataset_por["Mf"].values
+
+    # suddividiamo il dataseet in due dataset, uno di training ed uno di test
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3)
+
+    # standardizzo il train set creando un modello di standardizzazione
+    X_train_std = ss.fit_transform(X_train)
+    X_test_std = ss.transform(X_test)
+
+    best_model = batch_classify(X_train_std, Y_train, X_test_std, Y_test)
+
+    # Predicting
+    df_my_team_names = pd.read_csv(FILE_PATH + "My_team_POR.txt", sep=',', header=None, names=["Nome_Cognome", "Squadra"])
+
+    all_players = pd.read_excel(FILE_PATH + dataset_name, sheet_name=sheet_name)  # last football day played (giornata "corrente")
+
+    df_my_team = pd.DataFrame()
+
+    for player in list(df_my_team_names["Nome_Cognome"]):
+        players = list(all_players["Nome_Cognome"])
+        for each_player in players:
+            player_name = each_player.split("\\")
+            if player == player_name[1]:
+                df_my_team = df_my_team.append(all_players.loc[all_players["Nome_Cognome"] == each_player])
+
+    df_my_team_full = df_my_team.copy()
+    df_my_team = df_my_team.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
+
+    df_my_team_std = ss.transform(df_my_team)
+
+    prediction_list = list(best_model.predict(df_my_team_std))
+
+    df_final_score_gk = final_score(df_my_team_full, prediction_list, 27, sheet_name=sheet_name)  # last football day played (giornata "corrente")
+
+    return df_final_score_gk
+
+
+def best_eleven(df_final_score, df_final_score_gk):
+
+    df_final_score_gk = df_final_score_gk.sort_values(by=['Final_score'], ascending=False)
+    print(df_final_score_gk)
+    print()
+
+    # separare i giocatori per ruolo, ordinarli dopo la separazione
+    df_fs_dif = df_final_score.loc[df_final_score["Ruolo"] == "Dif"]
+    df_fs_dif = df_fs_dif.sort_values(by=['Final_score'], ascending=False)
+    print(df_fs_dif)
+    print()
+
+    df_fs_cen = df_final_score.loc[df_final_score["Ruolo"] == "Cen"]
+    df_fs_cen = df_fs_cen.sort_values(by=['Final_score'], ascending=False)
+    print(df_fs_cen)
+    print()
+
+    df_fs_att = df_final_score.loc[df_final_score["Ruolo"] == "Att"]
+    df_fs_att = df_fs_att.sort_values(by=['Final_score'], ascending=False)
+    print(df_fs_att)
+    print()
+
+    # taking the best players for the module
+    module_str = module.split("-")
+
+    nbr_dif, nbr_cen, nbr_att = int(module_str[0]), int(module_str[1]), int(module_str[2])
+
+    df_best_eleven = pd.DataFrame(columns=list(df_fs_att))
+
+    df_best_eleven = df_best_eleven.append(df_final_score_gk.iloc[0])
+    df_best_eleven = df_best_eleven.append(df_fs_dif[:nbr_dif])
+    df_best_eleven = df_best_eleven.append(df_fs_cen[:nbr_cen])
+    df_best_eleven = df_best_eleven.append(df_fs_att[:nbr_att])
+
+    return df_best_eleven
+

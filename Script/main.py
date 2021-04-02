@@ -28,10 +28,7 @@ df_final_score = p.final_score(my_team_full, prediction_list, next_fb_day, sheet
 print(df_final_score)
 print()
 
-df_final_score = df_final_score.sort_values(by=["Prediction"], ascending=False)
-print(df_final_score)
-print()
+df_final_score_gk = p.best_goalkeeper()
 
-# print the dataframe in a descending order by "Final_score" values
-df_final_score = df_final_score.sort_values(by=["Final_score"], ascending=False)
-print(df_final_score)
+best_team = p.best_eleven(df_final_score, df_final_score_gk)
+print(best_team)
