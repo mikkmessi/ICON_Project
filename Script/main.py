@@ -8,12 +8,6 @@ import performance as p
 current_fb_day = 27             # giornata su cui fare il learning e predire i voti della giornata successiva (27)
 next_fb_day = 28                # giornata successiva di cui predire i voti
 
-#file_path_1 = "C:\\Users\kecco\\Documents\\GitHub\ICON_Project\\Dataset\\Dataset_g26_NOPOR.xlsx"
-
-#file_path_2 = "C:\\Users\kecco\\Documents\\GitHub\ICON_Project\\Dataset\\Dataset_g27_NOPOR.xlsx"
-
-# file_path = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
-
 dataset = p.load_and_model("g26")
 
 X_train, X_test, Y_train, Y_test = p.split_and_std(dataset)

@@ -20,7 +20,9 @@ ss = StandardScaler()
 pca = PCA(n_components=0.5)
 
 N_PLAYERS = 3                                                   # COSTANTE
-FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
+#FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
+FILE_PATH = "C:\\Users\kecco\\Documents\\GitHub\ICON_Project\\Dataset\\"
+
 modules_list = ['3-4-3',
                 '3-5-2',
                 '4-5-1',
@@ -217,9 +219,20 @@ def final_weight(sheet_name, player_id, football_day):
 
     last_five = vs_team["Ultime_5"]                         # last five results for the opponent team
     lf_ratio_vs_team = (-1) * (last_five.count("V") / 5)    # SIXTH METRIC
-
+    
+    freq_best_XI = 0                                        # SEVENTH METRIC
+    
+    for i in range(24,29):
+        
+        best_XI = pd.read_excel(FILE_PATH + "Best_XI.xlsx", sheet_name="g" + str(i))
+        
+        if name_player[1] in list(best_XI["Nome_Cognome"]):
+            freq_best_XI = freq_best_XI + 1
+    
+    freq_best_XI = freq_best_XI / 5
+    
     # final weight for the single player
-    f_weight = round((dev_pos + vs_dev_goals + p_dev_goals + bonus_best_scorer + lf_ratio_p_team + lf_ratio_vs_team)/100, 3)
+    f_weight = round((dev_pos + vs_dev_goals + p_dev_goals + bonus_best_scorer + lf_ratio_p_team + lf_ratio_vs_team + freq_best_XI)/100, 5)
 
     return f_weight
 
