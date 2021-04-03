@@ -89,7 +89,7 @@ def split_and_std(stats):
     return X_train_std, X_test_std, Y_train, Y_test
 
 
-def batch_classify(X_train, Y_train, X_test, Y_test, no_regressors=3):
+def best_regressor(X_train, Y_train, X_test, Y_test, no_regressors=3):
     '''
         Given training and test sets, trains each regressor in dict_regressors, compute their train and test score,
         prints them for each regressor and returns the best regressor based on the mean between
@@ -160,25 +160,21 @@ def team(sheet_name):
     return df_my_team_std, df_my_team_full
 
 
-def final_weight(dataset_name, sheet_name, player_id, next_fb_day):
+def final_weight(all_players, calendario, classifica, player_id, next_fb_day):
     '''
         Given a player, it gets information on the next match of his team from the excel file and returns
         their sum, scaled by 100.
 
-    :param      dataset_name:   string
-    :param      sheet_name:     string
+    :param      all_players:    pandas dataframe
+    :param      calendario:     pandas dataframe
+    :param      classifica:     pandas dataframe
     :param      player_id:      string
-    :param      next_fb_day:   integer
+    :param      next_fb_day:    integer
 
     :return:    f_weight:       float
     '''
 
     BEST_SCORER = 0.1                                       # CONSTANT
-
-    # reading excel files
-    all_players = pd.read_excel(FILE_PATH + dataset_name, sheet_name=sheet_name, index_col="ID")
-    calendario = pd.read_excel(FILE_PATH + "Calendario_2021.xlsx")
-    classifica = pd.read_excel(FILE_PATH + "Classifica.xlsx", sheet_name=sheet_name, index_col="Squadra")
 
     player = all_players.loc[player_id]
     player_team = player["Squadra"]
@@ -372,12 +368,17 @@ def final_score(my_team_full, prediction, next_fb_day, dataset_name, sheet_name)
                 
     :param      my_team_full: pandas dataframe          user's full team dataframe, including string characteristics
     :param      prediction: list                        list of predictions of "Media Fantavoto" for team players
-    :param      football_day: integer                   the football day when the match is played
+    :param      next_fb_day: integer                   the football day when the match is played
     :param      dataset_name: string
     :param      sheet_name: string
 
     :return:    pandas dataframe                        final score for all players in user's team
     '''
+
+    # reading excel files
+    all_players = pd.read_excel(FILE_PATH + dataset_name, sheet_name=sheet_name, index_col="ID")
+    calendario = pd.read_excel(FILE_PATH + "Calendario_2021.xlsx")
+    classifica = pd.read_excel(FILE_PATH + "Classifica.xlsx", sheet_name=sheet_name, index_col="Squadra")
 
     # dictionary to transform into a pandas dataframe
     dict_final_score = {
@@ -398,7 +399,7 @@ def final_score(my_team_full, prediction, next_fb_day, dataset_name, sheet_name)
         player_name = row_player["Nome_Cognome"].values[0]
         player_name = player_name.split('\\')
         player_role = row_player["Ruolo"].values[0]
-        weight = final_weight(dataset_name, sheet_name, player, next_fb_day)
+        weight = final_weight(all_players, calendario, classifica, player, next_fb_day)
 
         dict_final_score['ID'].append(player_id)
         dict_final_score['Nome_Cognome'].append(player_name[1])
@@ -414,13 +415,12 @@ def final_score(my_team_full, prediction, next_fb_day, dataset_name, sheet_name)
     return df_final_score
 
 
-def best_goalkeeper(next_fb_day, dataset_name="Portieri.xlsx", sheet_name="g28"):
+def best_goalkeeper(next_fb_day, sheet_name, dataset_name="Portieri.xlsx"):
 
     ss = StandardScaler()
 
     # Training and testing
     dataset_por = pd.read_excel(FILE_PATH + dataset_name, sheet_name="g26")
-
     dataset_por = dataset_por.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
 
     X = dataset_por[["Partite_giocate", "PG_titolare", "Min_giocati", "Min_90", "Reti_sub",
@@ -436,7 +436,7 @@ def best_goalkeeper(next_fb_day, dataset_name="Portieri.xlsx", sheet_name="g28")
     X_train_std = ss.fit_transform(X_train)
     X_test_std = ss.transform(X_test)
 
-    best_model = batch_classify(X_train_std, Y_train, X_test_std, Y_test)
+    best_model = best_regressor(X_train_std, Y_train, X_test_std, Y_test)
 
     # Predicting
     df_my_team_names = pd.read_csv(FILE_PATH + "My_team_POR.txt", sep=',', header=None, names=["Nome_Cognome", "Squadra"])
@@ -444,13 +444,17 @@ def best_goalkeeper(next_fb_day, dataset_name="Portieri.xlsx", sheet_name="g28")
     all_players = pd.read_excel(FILE_PATH + dataset_name, sheet_name=sheet_name)  # last football day played (giornata "corrente")
 
     df_my_team = pd.DataFrame()
+    players = list(all_players["Nome_Cognome"])
 
-    for player in list(df_my_team_names["Nome_Cognome"]):
-        players = list(all_players["Nome_Cognome"])
-        for each_player in players:
-            player_name = each_player.split("\\")
+    for player in list(df_my_team_names["Nome_Cognome"]) or len(df_my_team) < 3:
+        i = 0
+        exit = False
+        while not exit:
+            player_name = players[i].split("\\")
             if player == player_name[1]:
-                df_my_team = df_my_team.append(all_players.loc[all_players["Nome_Cognome"] == each_player])
+                df_my_team = df_my_team.append(all_players.loc[all_players["Nome_Cognome"] == players[i]])
+                exit = True
+            i += 1
 
     df_my_team_full = df_my_team.copy()
     df_my_team = df_my_team.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra'], axis=1)
@@ -467,8 +471,6 @@ def best_goalkeeper(next_fb_day, dataset_name="Portieri.xlsx", sheet_name="g28")
 def best_eleven(df_final_score, df_final_score_gk):
 
     df_final_score_gk = df_final_score_gk.sort_values(by=['Final_score'], ascending=False)
-    print(df_final_score_gk)
-    print()
 
     # separare i giocatori per ruolo, ordinarli dopo la separazione
     df_fs_dif = df_final_score.loc[df_final_score["Ruolo"] == "Dif"]            # dataframe_finalscore_difensori
