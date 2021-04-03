@@ -403,7 +403,7 @@ def final_score(my_team_full, prediction, football_day, dataset_name, sheet_name
         weight = final_weight(dataset_name, sheet_name, player, football_day)
 
         dict_final_score['ID'].append(player_id)
-        dict_final_score['Nome_Cognome'].append(player_name[0])
+        dict_final_score['Nome_Cognome'].append(player_name[1])
         dict_final_score['Ruolo'].append(player_role)
         dict_final_score['Prediction'].append(prediction[i])
         dict_final_score['Final_weight'].append(weight)
