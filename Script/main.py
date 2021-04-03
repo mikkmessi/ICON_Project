@@ -5,7 +5,7 @@ Created on 10 mar 2021
 '''
 import performance as p
 
-TRAIN_FB_DAY = 26               # COSTANTE
+TRAIN_FB_DAY = 26                                                           # COSTANTE
 
 dataset = p.load_and_model(str(TRAIN_FB_DAY))
 
@@ -24,7 +24,7 @@ prediction_list = list(best_model.predict(my_team))
 df_final_score = p.final_score(my_team_full, prediction_list, next_fb_day, "Dataset_NOPOR.xlsx", sheet_name=str(current_fb_day))
 
 print("Training and testing portieri...")
-df_final_score_gk = p.best_goalkeeper(next_fb_day, str(current_fb_day))
+df_final_score_gk = p.best_goalkeeper(TRAIN_FB_DAY, next_fb_day, str(current_fb_day))
 
 best_team, best_module = p.best_eleven(df_final_score, df_final_score_gk)
 
