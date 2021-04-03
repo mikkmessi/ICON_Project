@@ -19,11 +19,9 @@ from sklearn.model_selection import GridSearchCV
 ss = StandardScaler()
 pca = PCA(n_components=0.5)
 
-N_PLAYERS = 3                                                   # COSTANTE
-# FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
-# FILE_PATH = "C:\\Users\kecco\\Documents\\GitHub\ICON_Project\\Dataset\\"
 FILE_PATH = "https://raw.githubusercontent.com/mikkmessi/ICON_Project/main/Dataset/"
 
+# lista di moduli da comparare per trovare il modulo migliore per la formazione migliore
 modules_list = ['3-4-3',
                 '3-5-2',
                 '4-5-1',
@@ -32,7 +30,7 @@ modules_list = ['3-4-3',
                 '5-3-2',
                 '5-4-1']
 
-# Creazione dizionario classificatori, che contiene come chiavi il nome dei class., come valori un istanza di essi
+# Creazione dizionario classificatori, che contiene come chiavi il nome dei regressori, come valori un istanza di essi
 dict_regressors = {
     "Linear Regression": LinearRegression(),
     "Naive Bayes": ARDRegression(),
@@ -162,7 +160,7 @@ def team(sheet_name):
     return df_my_team_std, df_my_team_full
 
 
-def final_weight(dataset_name, sheet_name, player_id, football_day):
+def final_weight(dataset_name, sheet_name, player_id, next_fb_day):
     '''
         Given a player, it gets information on the next match of his team from the excel file and returns
         their sum, scaled by 100.
@@ -170,7 +168,7 @@ def final_weight(dataset_name, sheet_name, player_id, football_day):
     :param      dataset_name:   string
     :param      sheet_name:     string
     :param      player_id:      string
-    :param      football_day:   integer
+    :param      next_fb_day:   integer
 
     :return:    f_weight:       float
     '''
@@ -186,7 +184,7 @@ def final_weight(dataset_name, sheet_name, player_id, football_day):
     player_team = player["Squadra"]
 
     # retrieving matches for the day
-    matches = list(calendario[football_day])
+    matches = list(calendario[next_fb_day])
 
     # retrieving opponent team for the player specified
     for match in matches:
@@ -368,7 +366,7 @@ def importance(best_model, dataset):
     return 0
 
 
-def final_score(my_team_full, prediction, football_day, dataset_name, sheet_name):
+def final_score(my_team_full, prediction, next_fb_day, dataset_name, sheet_name):
     '''
         Sums up each player "Media Fantavoto" prediction with each player "final_weight".
                 
@@ -400,7 +398,7 @@ def final_score(my_team_full, prediction, football_day, dataset_name, sheet_name
         player_name = row_player["Nome_Cognome"].values[0]
         player_name = player_name.split('\\')
         player_role = row_player["Ruolo"].values[0]
-        weight = final_weight(dataset_name, sheet_name, player, football_day)
+        weight = final_weight(dataset_name, sheet_name, player, next_fb_day)
 
         dict_final_score['ID'].append(player_id)
         dict_final_score['Nome_Cognome'].append(player_name[0])
@@ -416,7 +414,7 @@ def final_score(my_team_full, prediction, football_day, dataset_name, sheet_name
     return df_final_score
 
 
-def best_goalkeeper(dataset_name="Portieri.xlsx", sheet_name="g28"):
+def best_goalkeeper(next_fb_day, dataset_name="Portieri.xlsx", sheet_name="g28"):
 
     ss = StandardScaler()
 
@@ -461,7 +459,7 @@ def best_goalkeeper(dataset_name="Portieri.xlsx", sheet_name="g28"):
 
     prediction_list = list(best_model.predict(df_my_team_std))
 
-    df_final_score_gk = final_score(df_my_team_full, prediction_list, 28, dataset_name=dataset_name, sheet_name=sheet_name)  # last football day played (giornata "corrente")
+    df_final_score_gk = final_score(df_my_team_full, prediction_list, next_fb_day, dataset_name=dataset_name, sheet_name=sheet_name)  # last football day played (giornata "corrente")
 
     return df_final_score_gk
 
