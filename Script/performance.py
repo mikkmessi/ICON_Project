@@ -20,8 +20,9 @@ ss = StandardScaler()
 pca = PCA(n_components=0.5)
 
 N_PLAYERS = 3                                                   # COSTANTE
-#FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
-FILE_PATH = "C:\\Users\kecco\\Documents\\GitHub\ICON_Project\\Dataset\\"
+# FILE_PATH = "D:\\UniDispense\\ICON\\ICON_Project\\Dataset\\"
+# FILE_PATH = "C:\\Users\kecco\\Documents\\GitHub\ICON_Project\\Dataset\\"
+FILE_PATH = "https://raw.githubusercontent.com/mikkmessi/ICON_Project/main/Dataset/"
 
 modules_list = ['3-4-3',
                 '3-5-2',
@@ -161,11 +162,12 @@ def team(sheet_name):
     return df_my_team_std, df_my_team_full
 
 
-def final_weight(sheet_name, player_id, football_day):
+def final_weight(dataset_name, sheet_name, player_id, football_day):
     '''
         Given a player, it gets information on the next match of his team from the excel file and returns
         their sum, scaled by 100.
 
+    :param      dataset_name:   string
     :param      sheet_name:     string
     :param      player_id:      string
     :param      football_day:   integer
@@ -176,7 +178,7 @@ def final_weight(sheet_name, player_id, football_day):
     BEST_SCORER = 0.1                                       # CONSTANT
 
     # reading excel files
-    all_players = pd.read_excel(FILE_PATH + "Dataset_NOPOR.xlsx", sheet_name=sheet_name, index_col="ID")
+    all_players = pd.read_excel(FILE_PATH + dataset_name, sheet_name=sheet_name, index_col="ID")
     calendario = pd.read_excel(FILE_PATH + "Calendario_2021.xlsx")
     classifica = pd.read_excel(FILE_PATH + "Classifica.xlsx", sheet_name=sheet_name, index_col="Squadra")
 
@@ -222,7 +224,7 @@ def final_weight(sheet_name, player_id, football_day):
     
     freq_best_XI = 0                                        # SEVENTH METRIC
     
-    for i in range(24,29):
+    for i in range(24, 29):
         
         best_XI = pd.read_excel(FILE_PATH + "Best_XI.xlsx", sheet_name="g" + str(i))
         
@@ -366,13 +368,15 @@ def importance(best_model, dataset):
     return 0
 
 
-def final_score(my_team_full, prediction, football_day, sheet_name):
+def final_score(my_team_full, prediction, football_day, dataset_name, sheet_name):
     '''
         Sums up each player "Media Fantavoto" prediction with each player "final_weight".
                 
     :param      my_team_full: pandas dataframe          user's full team dataframe, including string characteristics
     :param      prediction: list                        list of predictions of "Media Fantavoto" for team players
     :param      football_day: integer                   the football day when the match is played
+    :param      dataset_name: string
+    :param      sheet_name: string
 
     :return:    pandas dataframe                        final score for all players in user's team
     '''
@@ -396,7 +400,7 @@ def final_score(my_team_full, prediction, football_day, sheet_name):
         player_name = row_player["Nome_Cognome"].values[0]
         player_name = player_name.split('\\')
         player_role = row_player["Ruolo"].values[0]
-        weight = final_weight(sheet_name, player, football_day)
+        weight = final_weight(dataset_name, sheet_name, player, football_day)
 
         dict_final_score['ID'].append(player_id)
         dict_final_score['Nome_Cognome'].append(player_name[0])
@@ -412,7 +416,7 @@ def final_score(my_team_full, prediction, football_day, sheet_name):
     return df_final_score
 
 
-def best_goalkeeper(dataset_name="Portieri.xlsx", sheet_name="g27"):
+def best_goalkeeper(dataset_name="Portieri.xlsx", sheet_name="g28"):
 
     ss = StandardScaler()
 
@@ -457,7 +461,7 @@ def best_goalkeeper(dataset_name="Portieri.xlsx", sheet_name="g27"):
 
     prediction_list = list(best_model.predict(df_my_team_std))
 
-    df_final_score_gk = final_score(df_my_team_full, prediction_list, 27, sheet_name=sheet_name)  # last football day played (giornata "corrente")
+    df_final_score_gk = final_score(df_my_team_full, prediction_list, 28, dataset_name=dataset_name, sheet_name=sheet_name)  # last football day played (giornata "corrente")
 
     return df_final_score_gk
 
@@ -471,18 +475,12 @@ def best_eleven(df_final_score, df_final_score_gk):
     # separare i giocatori per ruolo, ordinarli dopo la separazione
     df_fs_dif = df_final_score.loc[df_final_score["Ruolo"] == "Dif"]            # dataframe_finalscore_difensori
     df_fs_dif = df_fs_dif.sort_values(by=['Final_score'], ascending=False)
-    print(df_fs_dif)
-    print()
 
     df_fs_cen = df_final_score.loc[df_final_score["Ruolo"] == "Cen"]
     df_fs_cen = df_fs_cen.sort_values(by=['Final_score'], ascending=False)
-    print(df_fs_cen)
-    print()
 
     df_fs_att = df_final_score.loc[df_final_score["Ruolo"] == "Att"]
     df_fs_att = df_fs_att.sort_values(by=['Final_score'], ascending=False)
-    print(df_fs_att)
-    print()
 
     goalkeeper = df_final_score_gk.iloc[0]
 
