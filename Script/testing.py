@@ -52,7 +52,9 @@ def best_regressor(X_train, Y_train, X_test, Y_test, no_regressors=3):
         dict_models[regressor_name] = {'model': regressor, 'train_score': train_score, 'test_score': test_score,
                                         'media': mean}
 
-    print(dict_models)
+    for names,values in dict_models.items():
+       print(names)
+       print(values)
 
     return dict_best_model
 
@@ -70,7 +72,7 @@ def principal_component_analysis(X_train_std, X_test_std):
     plt.plot(np.cumsum(pca_test.explained_variance_ratio_))
     plt.xlabel('number of components')
     plt.ylabel('cumulative explained variance')
-    plt.axvline(linewidth=4, color='r', linestyle='--', x=20, ymin=0, ymax=1)
+    plt.axvline(linewidth=4, color='r', linestyle='--', x=40, ymin=0, ymax=1)
     plt.show()
 
     evr = pca_test.explained_variance_ratio_
@@ -113,6 +115,7 @@ def hypertuning(best_model, X_train_std, Y_train, X_test_std, Y_test):
     }
     rs = RandomizedSearchCV(best_model, param_dist, n_iter=100, cv=3, verbose=1, n_jobs=-1, random_state=0)
     rs.fit(X_train_std, Y_train)
+    print("Migliori parametri RandomizedSearchCV: \n")
     print(rs.best_params_)
 
     rs_df = pd.DataFrame(rs.cv_results_).sort_values('rank_test_score').reset_index(drop=True)
@@ -123,33 +126,33 @@ def hypertuning(best_model, X_train_std, Y_train, X_test_std, Y_test):
 
     fig, axs = plt.subplots(ncols=3, nrows=2)
     sns.set(style="whitegrid", color_codes=True, font_scale=2)
-    fig.set_size_inches(20, 15)
+    fig.set_size_inches(30, 25)
 
     sns.barplot(x='param_n_estimators', y='mean_test_score', data=rs_df, ax=axs[0, 0], color='lightgrey')
-    axs[0, 0].set_title(label='n_estimators', size=30, weight='bold')
+    axs[0, 0].set_title(label='n_estimators', size=20, weight='bold')
 
     sns.barplot(x='param_min_samples_split', y='mean_test_score', data=rs_df, ax=axs[0, 1], color='coral')
-    axs[0, 1].set_title(label='min_samples_split', size=30, weight='bold')
+    axs[0, 1].set_title(label='min_samples_split', size=20, weight='bold')
 
     sns.barplot(x='param_min_samples_leaf', y='mean_test_score', data=rs_df, ax=axs[0, 2], color='lightgreen')
-    axs[0, 2].set_title(label='min_samples_leaf', size=30, weight='bold')
+    axs[0, 2].set_title(label='min_samples_leaf', size=20, weight='bold')
 
     sns.barplot(x='param_max_features', y='mean_test_score', data=rs_df, ax=axs[1, 0], color='wheat')
-    axs[1, 0].set_title(label='max_features', size=30, weight='bold')
+    axs[1, 0].set_title(label='max_features', size=20, weight='bold')
 
     sns.barplot(x='param_max_depth', y='mean_test_score', data=rs_df, ax=axs[1, 1], color='lightpink')
-    axs[1, 1].set_title(label='max_depth', size=30, weight='bold')
+    axs[1, 1].set_title(label='max_depth', size=20, weight='bold')
 
     sns.barplot(x='param_bootstrap', y='mean_test_score', data=rs_df, ax=axs[1, 2], color='skyblue')
-    axs[1, 2].set_title(label='bootstrap', size=30, weight='bold')
+    axs[1, 2].set_title(label='bootstrap', size=20, weight='bold')
 
     plt.show()
 
-    n_estimators = [300, 500, 700, 1000]
+    n_estimators = [300, 500, 700]
     max_features = ['sqrt']
-    max_depth = [2, 3, 7, 15]
-    min_samples_split = [2, 7, 12, 23]
-    min_samples_leaf = [2, 7, 12, 18]
+    max_depth = [3, 7, 15]
+    min_samples_split = [2, 7, 23]
+    min_samples_leaf = [2, 7, 18]
     bootstrap = [False]
     param_grid = {'n_estimators': n_estimators,
                   'max_features': max_features,
@@ -160,7 +163,8 @@ def hypertuning(best_model, X_train_std, Y_train, X_test_std, Y_test):
     gs = GridSearchCV(best_model, param_grid, cv=3, verbose=1, n_jobs=-1)
     gs.fit(X_train_std, Y_train)
     rfc = gs.best_estimator_
-
+    
+    print("Migliori parametri GridSearchCV: \n")
     print(gs.best_params_)
     print(rfc)
 
