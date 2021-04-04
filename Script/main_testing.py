@@ -1,6 +1,5 @@
 import performance as p
 import testing as test
-
 TRAIN_FB_DAY = 26                                                           # COSTANTE
 
 dataset_train = p.load_and_model(str(TRAIN_FB_DAY))
@@ -30,14 +29,29 @@ if dict_best_model['name'] == 'Random Forest':
 
     print("\nHypertuning RANDOM FOREST CON PCA:\n")
     rs_score_pca_train, rs_score_pca_test, gs_score_pca_train, gs_score_pca_test = test.hypertuning(best_model_pca, X_train_pca, Y_train, X_test_pca, Y_test)
+'''
+dict_best_model = {'name': 'Random Forest', 'train_score': 0.235, 'test_score': 0.235}
+dict_best_model_pca = {'train_score': 0.235, 'test_score': 0.235}
+
+rs_score_train = rs_score_test = gs_score_train = gs_score_test = rs_score_pca_train = rs_score_pca_test = gs_score_pca_train = gs_score_pca_test = 0.235
+'''
+dict_models = {'No PCA': [dict_best_model['train_score'], dict_best_model['test_score']],
+               'PCA': [dict_best_model_pca['train_score'], dict_best_model_pca['test_score']]}
 
 print("SCORE-------------------------------")
-print("Best Model no PCA: \t\t\tTrain score: ", dict_best_model['train_score'], "\tTest score: ", dict_best_model['test_score'],
-      "\nBest Model with PCA: \t\tTrain score: ", dict_best_model_pca['train_score'], "\tTest score: ", dict_best_model_pca['test_score'])
+print("{:<10}\t{:<10}\t{:<15}".format("Model", "Train score", "Test score"))
+for key, values in dict_models.items():
+    train_score, test_score = values
+    print("{:<15}\t{:<9}\t{:<15}".format(key, train_score, test_score))
 
 if dict_best_model['name'] == 'Random Forest':
-    print("Best Model HT no PCA: \tRS -> Train score: ", rs_score_train, "\tTest score: ", rs_score_test,
-                                  "\tGS ->\t\tTrain score: ", gs_score_train, "\tTest score: ", gs_score_test,
-          "\nBest Model HT with PCA: \tRS ->\tTrain score: ", rs_score_pca_train, "\tTest score: ", rs_score_pca_test,
-                                    "\tGS ->\tTrain score: ", gs_score_pca_train, "\tTest score: ", gs_score_pca_test)
-print("SCORE END---------------------------")
+
+    dict_models = {'HT RS': [rs_score_train, rs_score_test],
+                   'HT GS': [gs_score_train, gs_score_test],
+                   'HT PCA RS': [rs_score_pca_train, rs_score_pca_test],
+                   'HT PCA GS': [gs_score_pca_train, gs_score_pca_test]}
+
+    for key, values in dict_models.items():
+        train_score, test_score = values
+        print("{:<15}\t{:<9}\t{:<15}".format(key, train_score, test_score))
+print("END---------------------------------")

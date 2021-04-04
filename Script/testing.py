@@ -148,6 +148,10 @@ def hypertuning(best_model, X_train_std, Y_train, X_test_std, Y_test):
 
     plt.show()
 
+<<<<<<< Updated upstream
+=======
+    # dati empirici
+>>>>>>> Stashed changes
     n_estimators = [300, 500, 700]
     max_features = ['sqrt']
     max_depth = [3, 7, 15]
