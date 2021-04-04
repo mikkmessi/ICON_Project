@@ -1,23 +1,13 @@
 '''
-Created on 10 mar 2021
+    Questo script contiene le funzioni utilizzate nel main e nell'allenamento del modello e predizione della prestazione
+    dei giocatori.
 
-@author: kecco
+    Team: Michele Messina, Francesco Zingariello
 '''
-import numpy as np
 import pandas as pd
+import testing as test
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model._base import LinearRegression
-from sklearn.linear_model import ARDRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import GridSearchCV
-
-ss = StandardScaler()
-pca = PCA(n_components=0.5)
 
 FILE_PATH = "https://raw.githubusercontent.com/mikkmessi/ICON_Project/main/Dataset/"
 
@@ -29,13 +19,13 @@ modules_list = ['3-4-3',
                 '4-3-3',
                 '5-3-2',
                 '5-4-1']
+ss = StandardScaler()
 
 
 def load_and_model(sheet_name):
     '''
-        The function loads an excel file from path in a pandas dataframe then
-        does a one-hot encode of a categorical variable.
-    :param      file_path:      string
+        Carica un file excel dal path in un dataframe pandas e converte le feature nominali in integer.
+
     :param      sheet_name:     string
     :return:    stats:          pandas dataframe
     '''
@@ -48,8 +38,8 @@ def load_and_model(sheet_name):
 
 def split_and_std(stats):
     '''
-        Once removed all the string parameters from the dataframe, splits "stats" in train and test sets and scales
-        the feature sets.
+        Una volta rimossi i parametri letterali dal dataframe, la funzione divide "stats" in train e test set e
+        standardizza i valori delle feature.
 
     :param      stats: pandas dataframe
     :return:    X_train_std, X_test_std, Y_train, Y_test: list
@@ -82,14 +72,13 @@ def split_and_std(stats):
     return X_train_std, X_test_std, Y_train, Y_test
 
     
-def team(sheet_name):
+def get_team(sheet_name):
     '''
-        Reads from a txt file the players' names, extract them from the complete dataframe, saves in "df_my_team_full" the complete
-        set of information, including the string values, then drop them and scale their numeric values, in df_my_team_std.
+        Legge i nomi da un file txt, li estrae dal dataframe completo, li salva in un secondo dataframe.
+        Crea un terzo dataframe senza valori letterali per standardizzarne i valori.
 
-    :param      file_path:         string
     :param      sheet_name:        string
-    :return:    df_my_team_std:    transformed array, with no string parameters
+    :return:    df_my_team_std:    transformed array
     :return:    df_my_team_full:   pandas dataframe
     '''
 
@@ -119,8 +108,8 @@ def team(sheet_name):
 
 def final_weight(all_players, calendario, classifica, player_id, next_fb_day):
     '''
-        Given a player, it gets information on the next match of his team from the excel file and returns
-        their sum, scaled by 100.
+        Dato un giocatore, recupera le informazioni da un file excel della partita successiva all'ultima giornata
+        giocata e ritorna la loro somma, ridotto di 1/100
 
     :param      all_players:    pandas dataframe
     :param      calendario:     pandas dataframe
@@ -192,15 +181,15 @@ def final_weight(all_players, calendario, classifica, player_id, next_fb_day):
 
 def final_score(my_team_full, prediction, next_fb_day, dataset_name, sheet_name):
     '''
-        Sums up each player "Media Fantavoto" prediction with each player "final_weight".
+        Somma per la predizione della prestazione di ciascun giocatore con il rispettivo "final weight".
                 
-    :param      my_team_full: pandas dataframe          user's full team dataframe, including string characteristics
-    :param      prediction: list                        list of predictions of "Media Fantavoto" for team players
-    :param      next_fb_day: integer                   the football day when the match is played
+    :param      my_team_full: pandas dataframe
+    :param      prediction: list
+    :param      next_fb_day: integer
     :param      dataset_name: string
     :param      sheet_name: string
 
-    :return:    pandas dataframe                        final score for all players in user's team
+    :return:    pandas dataframe
     '''
 
     # reading excel files
@@ -244,8 +233,18 @@ def final_score(my_team_full, prediction, next_fb_day, dataset_name, sheet_name)
 
 
 def best_goalkeeper(TRAIN_FB_DAY, next_fb_day, sheet_name, dataset_name="Portieri.xlsx"):
+    '''
+        Train del modello RandomForest sui portieri e prediction della loro prestazione.
+        Restituisce la lista dei portieri della propria squadra, con predizione e final score.
 
+    :param TRAIN_FB_DAY: integer
+    :param next_fb_day: integer
+    :param sheet_name: string
+    :param dataset_name: string
+    :return: df_final_score_gk: pandas dataframe
+    '''
     ss = StandardScaler()
+
 
     # Training and testing
     dataset_por = pd.read_excel(FILE_PATH + dataset_name, sheet_name=str(TRAIN_FB_DAY))
@@ -264,7 +263,8 @@ def best_goalkeeper(TRAIN_FB_DAY, next_fb_day, sheet_name, dataset_name="Portier
     X_train_std = ss.fit_transform(X_train)
     X_test_std = ss.transform(X_test)
 
-    best_model = best_regressor(X_train_std, Y_train, X_test_std, Y_test)
+    dic_best_model = test.best_regressor(X_train_std, Y_train, X_test_std, Y_test)
+    best_model = dic_best_model['model']
 
     # Predicting
     df_my_team_names = pd.read_csv(FILE_PATH + "My_team_POR.txt", sep=',', header=None, names=["Nome_Cognome", "Squadra"])
@@ -297,7 +297,15 @@ def best_goalkeeper(TRAIN_FB_DAY, next_fb_day, sheet_name, dataset_name="Portier
 
 
 def best_eleven(df_final_score, df_final_score_gk):
+    '''
+        Dati i dataframe per i portieri e per i giocatori, divide i giocatori per ruolo, li ordina per "final score",
+        restituisce la migliore formazione confrontando anche i vari moduli possibili con i migliori undici giocatori
 
+    :param df_final_score: pandas dataframe
+    :param df_final_score_gk: pandas dataframe
+    :return: df_best_team: pandas dataframe
+    :return: best_module: string
+    '''
     df_final_score_gk = df_final_score_gk.sort_values(by=['Final_score'], ascending=False)
 
     # separare i giocatori per ruolo, ordinarli dopo la separazione

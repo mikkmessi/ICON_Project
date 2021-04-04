@@ -1,3 +1,9 @@
+'''
+    Questo script contiene le funzioni utilizzate nello script di testing.
+
+
+    Team: Michele Messina, Francesco Zingariello
+'''
 import numpy as np
 import pandas as pd
 from sklearn.linear_model._base import LinearRegression
@@ -13,8 +19,8 @@ import seaborn as sns
 # Creazione dizionario classificatori, che contiene come chiavi il nome dei regressori, come valori un istanza di essi
 dict_regressors = {
     "Linear Regression": LinearRegression(),
-    "Naive Bayes": ARDRegression(),
-    "Random Forest": RandomForestRegressor(),
+    "Naive Bayes": ARDRegression(),                     # Automatic Relevance Determination Regression
+    "Random Forest": RandomForestRegressor()
 }
 
 pca = PCA(n_components=40)
@@ -22,14 +28,10 @@ pca = PCA(n_components=40)
 
 def best_regressor(X_train, Y_train, X_test, Y_test, no_regressors=3):
     '''
-        Given training and test sets, trains each regressor in dict_regressors, compute their train and test score,
-        prints them for each regressor and returns the best regressor based on the mean between
-        train and test score.
+        Dati i set di training e test, addestra ogni regressore in dict_regressors, calcola il loro train e test score,
+        li stampa per ogni regressore e restituisce il miglior regressore in base alla media tra essi.
 
-    :param      X_train: list
-    :param      Y_train: list
-    :param      X_test: list
-    :param      Y_test: list
+    :param      X_train, Y_train, X_test, Y_test: list
     :param      no_regressors: integer
 
     :return:    best_model: regressor
@@ -52,19 +54,19 @@ def best_regressor(X_train, Y_train, X_test, Y_test, no_regressors=3):
         dict_models[regressor_name] = {'model': regressor, 'train_score': train_score, 'test_score': test_score,
                                         'media': mean}
 
-    for names,values in dict_models.items():
-       print(names)
-       print(values)
+    for names, values in dict_models.items():
+        print(names)
+        print(values)
 
     return dict_best_model
 
 
 def principal_component_analysis(X_train_std, X_test_std):
     '''
-        Given training and test sets, reduce the number of features based on variance ratio
+        Dati i set di training e test, riduce il numero di feature basandosi sulla variance ratio
 
-    :param      X_train_std:    list
-    :param      X_test_std:     list
+    :param      X_train_std, X_test_std: list
+    :return     X_train_pca, X_test_pca: list
     '''
     pca_test = PCA(n_components=83)
     pca_test.fit(X_train_std)
@@ -92,11 +94,19 @@ def principal_component_analysis(X_train_std, X_test_std):
 
 def hypertuning(best_model, X_train_std, Y_train, X_test_std, Y_test):
     '''
-        Perform RandomizedSearchCV and GridSearchCV in order to find the best combination of parameters for the regressor
+        Esegue le funzioni RandomizedSearchCV e GridSearchCV con l'obiettivo di trovare la miglior combinazione di
+        parametri per un RandomForestRegressor
 
-    :param     best_model: regressor
-    :param      X_train: list
+    :param      best_model: regressor
+    :param      X_train_std: list
     :param      Y_train: list
+    :param      X_test_std: list
+    :param      Y_test: list
+
+    :return     rs.score(X_train_std, Y_train): float
+    :return     rs.score(X_test_std, Y_test):   float
+    :return     gs.score(X_train_std, Y_train): float
+    :return     gs.score(X_test_std, Y_test):   float
     '''
 
     n_estimators = [int(x) for x in np.linspace(start=100, stop=1000, num=10)]
@@ -148,10 +158,7 @@ def hypertuning(best_model, X_train_std, Y_train, X_test_std, Y_test):
 
     plt.show()
 
-<<<<<<< Updated upstream
-=======
     # dati empirici
->>>>>>> Stashed changes
     n_estimators = [300, 500, 700]
     max_features = ['sqrt']
     max_depth = [3, 7, 15]
@@ -172,15 +179,15 @@ def hypertuning(best_model, X_train_std, Y_train, X_test_std, Y_test):
     print(gs.best_params_)
     print(rfc)
 
-    return rs.score(X_train_std, Y_train), rs.score(X_test_std, Y_test), gs.score(X_train_std, Y_train), gs.score(X_test_std, Y_test),
+    return rs.score(X_train_std, Y_train), rs.score(X_test_std, Y_test), gs.score(X_train_std, Y_train), gs.score(X_test_std, Y_test)
 
 
 def importance(best_model, dataset):
     '''
-        Shows dataset's features importance given a model of regression
+        Mostra l'importanza delle feature secondo un modello di regressione
 
-    :param     best_model: regressor
-    :param     dataset: pandas dataframe
+    :param      best_model: regressor
+    :param      dataset: pandas dataframe
     '''
 
     dataset = dataset.drop(['ID', 'Nome_Cognome', 'Ruolo', 'Squadra', 'Mf'], axis=1)
