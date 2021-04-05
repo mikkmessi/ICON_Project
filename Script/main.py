@@ -17,7 +17,7 @@ X_train, X_test, Y_train, Y_test = lu.split_and_std(dataset)
 print("Training giocatori...")
 rfr.fit(X_train, Y_train)
 
-next_fb_day = int(input("Inserire la giornata per cui predire la formazione: "))
+next_fb_day = int(input("\nInserire la giornata per cui predire la formazione: "))
 current_fb_day = next_fb_day - 1   # ultima giornata di campionato giocata, usata per predire i voti
 
 my_team, my_team_full = lu.get_team(str(current_fb_day))                     # 25 players of user's team

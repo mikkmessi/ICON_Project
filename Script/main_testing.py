@@ -3,14 +3,14 @@
 
     Team: Michele Messina, Francesco Zingariello
 '''
-import line_up as p
+import line_up as lu
 import testing as test
 
 TRAIN_FB_DAY = 26                                                           # COSTANTE
 
-dataset_train = p.load_and_model(str(TRAIN_FB_DAY))
+dataset_train = lu.load_and_model(str(TRAIN_FB_DAY))
 
-X_train, X_test, Y_train, Y_test = p.split_and_std(dataset_train)
+X_train, X_test, Y_train, Y_test = lu.split_and_std(dataset_train)
 
 print("Training e testing giocatori SENZA PCA: \n")
 dict_best_model = test.best_regressor(X_train, Y_train, X_test, Y_test)

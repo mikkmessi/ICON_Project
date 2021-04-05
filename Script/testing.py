@@ -12,7 +12,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import seaborn as sns
 
