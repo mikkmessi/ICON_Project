@@ -37,4 +37,4 @@ print()
 print(best_team)
 
 rfr.n_estimators += 100                                                 # Simula l'aggiornamento del modello in seguito all'aggiunta di nuovi dati
-rfr.fit(X_train, Y_train)
+rfr.fit(X_test, Y_test)

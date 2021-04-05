@@ -12,6 +12,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -48,11 +49,9 @@ def best_regressor(X_train, Y_train, X_test, Y_test, no_regressors=3):
 
         if mean > massimo:
             massimo = mean
-            dict_best_model = {'name': regressor_name, 'model': regressor, 'train_score': train_score, 'test_score': test_score,
-                                        'media': mean}
+            dict_best_model = {'name': regressor_name, 'model': regressor, 'train_score': train_score, 'test_score': test_score, 'media': mean}
 
-        dict_models[regressor_name] = {'model': regressor, 'train_score': train_score, 'test_score': test_score,
-                                        'media': mean}
+        dict_models[regressor_name] = {'model': regressor, 'train_score': train_score, 'test_score': test_score, 'media': mean}
 
     for names, values in dict_models.items():
         print(names)
