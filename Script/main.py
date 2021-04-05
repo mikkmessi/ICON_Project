@@ -36,6 +36,3 @@ print()
 print("Il modulo migliore per la prossima partita sembrerebbe essere il modulo ", best_module, "con la formazione: ")
 print()
 print(best_team)
-
-rfr.n_estimators += 100                                                 # Simula l'aggiornamento del modello in seguito all'aggiunta di nuovi dati
-rfr.fit(X_test, Y_test)
