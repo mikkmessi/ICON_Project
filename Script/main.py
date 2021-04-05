@@ -5,14 +5,15 @@
     Team: Michele Messina, Francesco Zingariello
 '''
 import line_up as lu
+import modeling as m
 import testing as test
 
 TRAIN_FB_DAY = 26                                                           # COSTANTE
 rfr = test.RandomForestRegressor(warm_start=True)
 
-dataset = lu.load_and_model(str(TRAIN_FB_DAY))
+dataset = m.load_and_model(str(TRAIN_FB_DAY))
 
-X_train, X_test, Y_train, Y_test = lu.split_and_std(dataset)
+X_train, X_test, Y_train, Y_test = m.split_and_std(dataset)
 
 print("Training giocatori...")
 rfr.fit(X_train, Y_train)
@@ -20,7 +21,7 @@ rfr.fit(X_train, Y_train)
 next_fb_day = int(input("\nInserire la giornata per cui predire la formazione: "))
 current_fb_day = next_fb_day - 1   # ultima giornata di campionato giocata, usata per predire i voti
 
-my_team, my_team_full = lu.get_team(str(current_fb_day))                     # 25 players of user's team
+my_team, my_team_full = m.get_team(str(current_fb_day))                     # 25 players of user's team
 
 prediction_list = list(rfr.predict(my_team))
 
